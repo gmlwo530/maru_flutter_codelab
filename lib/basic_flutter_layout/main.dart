@@ -1,42 +1,61 @@
 import 'package:flutter/material.dart';
+import 'row_and_column.dart';
+
+final List<Entry> data = <Entry>[
+  Entry(
+    'Row And Column',
+    <Entry>[
+      Entry(RowAndColumn()),
+    ],
+  ),
+];
 
 class BasicLayout extends StatelessWidget{
   @override
   Widget build(BuildContext context){
     return MaterialApp(
-      title: 'Flutter Basic Layout',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
       home: Scaffold(
         appBar: AppBar(
-          title: Text('Flutter Basic Layout'),
-          leading: IconButton(icon: Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context, false), // pop의 두번째 인자는 dialog 또는 popup menu의 결과 값을 반환 해줄 떄 사용한다고 한다
-          )
+          title: const Text('Flutter Basic Layout'),
         ),
-        body: Row(
-          children: [
-            BlueBox(),
-            BlueBox(),
-            BlueBox(),
-          ],
+        body: ListView.builder(
+          itemBuilder: (BuildContext context, int index) =>
+              EntryItem(data[index]),
+          itemCount: data.length,
         ),
       ),
     );
   }
 }
 
-class BlueBox extends StatelessWidget {
+
+class Entry {
+  Entry(this.title, [this.children = const <Entry>[]]);
+
+  final String title;
+  final List<Entry> children;
+}
+
+
+
+// Displays one Entry. If the entry has children then it's displayed
+// with an ExpansionTile.
+class EntryItem extends StatelessWidget {
+  const EntryItem(this.entry);
+
+  final Entry entry;
+
+  Widget _buildTiles(Entry root) {
+    if (root.children.isEmpty) return ListTile(title: Text(root.title));
+    return ExpansionTile(
+      key: PageStorageKey<Entry>(root),
+      title: Text(root.title),
+      children: root.children.map(_buildTiles).toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 50,
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        border: Border.all(),
-      ),
-    );
+    return _buildTiles(entry);
   }
 }
